@@ -1,0 +1,27 @@
+name: debug-secret
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe CHECK_WORKER
+        env:
+          CHECK_WORKER: ${{ secrets.DOMAIN }}
+        run: |
+          python - <<'PY'
+          import os
+          u = os.environ.get("CHECK_WORKER", "<unset>")
+          print("len:", len(u))
+          print("has_query:", "sstp=" in u)
+          print("endswith_at:", u.endswith("@"))
+          try:
+              import requests
+              r = requests.get(u + "1.1.1.1%3A443", timeout=30)
+              print("status:", r.status_code)
+              print("body:", r.text[:300])
+          except Exception as e:
+              print("ERR:", type(e).__name__, str(e)[:300])
+          PY
