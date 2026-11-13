@@ -1,0 +1,22 @@
+name: Probe Worker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe
+        run: |
+          BASE="https://mycheck.thetangwei.workers.dev"
+          for P in "/" "/check" "/check?sstp=vpn:vpn@vpn205396913.opengw.net:1922" "/api/check?sstp=vpn:vpn@vpn205396913.opengw.net:1922"; do
+            echo "===== PATH $P"
+            curl -s -m 40 -o /tmp/body.txt -D /tmp/hdr.txt -w "STATUS=%{http_code} SIZE=%{size_download} TYPE=%{content_type}\n" "$BASE$P"
+            echo "--- headers"
+            head -8 /tmp/hdr.txt
+            echo "--- body head"
+            head -c 700 /tmp/body.txt
+            echo
+          done
